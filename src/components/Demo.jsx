@@ -10,7 +10,7 @@ const Demo = () => {
   });
   const [allArticles, setAllArticles] = useState([]);
   const [copied, setCopied] = useState("");
-
+  const [isError, setIsError] = useState(false);
   // RTK lazy query
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
 
@@ -26,8 +26,8 @@ const Demo = () => {
   }, []);
 
   const handleSubmit = async (e) => {
+    setIsError(false);
     e.preventDefault();
-
     const existingArticle = allArticles.find(
       (item) => item.url === article.url
     );
@@ -35,7 +35,9 @@ const Demo = () => {
     if (existingArticle) return setArticle(existingArticle);
 
     const { data } = await getSummary({ articleUrl: article.url });
+    if (error) setIsError(true);
     if (data?.summary) {
+      setIsError(false);
       const newArticle = { ...article, summary: data.summary };
       const updatedAllArticles = [newArticle, ...allArticles];
 
@@ -85,6 +87,7 @@ const Demo = () => {
           <button
             type="submit"
             className="submit_btn peer-focus:border-gray-700 peer-focus:text-gray-700 "
+            onClick={handleSubmit}
           >
             <p>↵</p>
           </button>
@@ -117,7 +120,7 @@ const Demo = () => {
       <div className="my-10 max-w-full flex justify-center items-center">
         {isFetching ? (
           <img src={loader} alt="loader" className="w-20 h-20 object-contain" />
-        ) : error ? (
+        ) : isError ? (
           <p className="font-inter font-bold text-black text-center">
             Well, that wasn't supposed to happen...
             <br />
